@@ -8,12 +8,12 @@ import os
 tts_enabled = True
 
 # Initialize the client
-client = OpenAI()
+client = OpenAI('sk-proj-vsaZWpnJZEzTX79x9szqT3BlbkFJWydsSsKEs7fufAsvs0sB')
 mixer.init()
 # Retrieve the assistant
-assistant = client.beta.assistants.retrieve("Insert_your_assistant_ID_here")
+assistant = client.beta.assistants.retrieve("asst_TkwHTjSNqt2E59MX7VGs01NW")
 #create empty thread
-jarvis_thread = "Insert_your_thread_id_here"
+jarvis_thread = "thread_GrYz4AS6OyjQWxqW88QAhA2q"
 thread = client.beta.threads.retrieve(jarvis_thread)
 
 # Function to ask a question to the assistant

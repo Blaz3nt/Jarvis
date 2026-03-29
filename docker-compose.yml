@@ -1,0 +1,28 @@
+services:
+  jarvis:
+    build: .
+    container_name: jarvis
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Mount your documents folder (change left side to your actual path)
+      - ~/Documents:/documents:ro
+      # Persistent storage for reminders database
+      - jarvis-data:/data
+    devices:
+      # Audio device passthrough (required for mic + speaker)
+      - /dev/snd:/dev/snd
+    # Required for audio access
+    privileged: false
+    group_add:
+      - audio
+    environment:
+      - PULSE_SERVER=unix:${XDG_RUNTIME_DIR:-/run/user/1000}/pulse/native
+    volumes_from: []
+    extra_hosts:
+      # If using Home Assistant on the same machine
+      - "homeassistant.local:host-gateway"
+
+volumes:
+  jarvis-data:

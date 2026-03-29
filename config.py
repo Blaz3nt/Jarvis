@@ -30,6 +30,11 @@ CONVERSATION_TIMEOUT = int(os.environ.get("CONVERSATION_TIMEOUT", "30"))  # seco
 CONVERSATION_PAUSE = float(os.environ.get("CONVERSATION_PAUSE", "2.0"))  # seconds of silence to detect end of a sentence
 WAKE_WORD_SENSITIVITY = float(os.environ.get("WAKE_WORD_SENSITIVITY", "0.5"))  # 0.0-1.0, higher = more sensitive
 
+# Grace period — after conversation timeout, Jarvis still listens for this many
+# seconds. If you speak during grace, it re-engages without the wake word.
+# Like a human who just stopped talking but is still paying half-attention.
+GRACE_PERIOD = int(os.environ.get("GRACE_PERIOD", "60"))
+
 # Email (IMAP)
 EMAIL_IMAP_SERVER = os.environ.get("EMAIL_IMAP_SERVER", "")
 EMAIL_ADDRESS = os.environ.get("EMAIL_ADDRESS", "")

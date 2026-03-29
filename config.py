@@ -25,6 +25,11 @@ TTS_ENABLED = os.environ.get("TTS_ENABLED", "true").lower() == "true"
 # Hotwords
 HOT_WORDS = os.environ.get("HOT_WORDS", "jarvis").lower().split(",")
 
+# Conversation mode — after wake word, stay engaged without needing it again
+CONVERSATION_TIMEOUT = int(os.environ.get("CONVERSATION_TIMEOUT", "30"))  # seconds of silence before going back to sleep
+CONVERSATION_PAUSE = float(os.environ.get("CONVERSATION_PAUSE", "2.0"))  # seconds of silence to detect end of a sentence
+WAKE_WORD_SENSITIVITY = float(os.environ.get("WAKE_WORD_SENSITIVITY", "0.5"))  # 0.0-1.0, higher = more sensitive
+
 # Email (IMAP)
 EMAIL_IMAP_SERVER = os.environ.get("EMAIL_IMAP_SERVER", "")
 EMAIL_ADDRESS = os.environ.get("EMAIL_ADDRESS", "")

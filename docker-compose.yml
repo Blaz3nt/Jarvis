@@ -8,17 +8,20 @@ services:
     volumes:
       # Mount your documents folder (change left side to your actual path)
       - ~/Documents:/documents:ro
-      # Persistent storage for reminders database
+      # Persistent storage for memory, reminders, and vector DB
       - jarvis-data:/data
     devices:
       # Audio device passthrough (required for mic + speaker)
       - /dev/snd:/dev/snd
-    # Required for audio access
-    privileged: false
+      # Camera passthrough (for vision - add your camera device)
+      # Uncomment and adjust if you have a webcam:
+      # - /dev/video0:/dev/video0
     group_add:
       - audio
+      - video
     environment:
       - PULSE_SERVER=unix:${XDG_RUNTIME_DIR:-/run/user/1000}/pulse/native
+      - DISPLAY=${DISPLAY:-:0}
     volumes_from: []
     extra_hosts:
       # If using Home Assistant on the same machine

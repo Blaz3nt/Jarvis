@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsdl2-2.0-0 \
     ffmpeg \
     git \
+    scrot \
+    v4l-utils \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

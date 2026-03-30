@@ -32,12 +32,16 @@ import config
 import tts
 from listener import Listener
 from memory import get_stats
+from monitors import init_monitors
 from tools.reminders import init_scheduler
 
 
 def main():
     # Initialize reminders
     init_scheduler(callback=lambda msg: tts.speak(f"Reminder: {msg}"))
+
+    # Initialize proactive monitors (system health, email, etc.)
+    init_monitors(alert_callback=lambda msg: tts.speak(msg))
 
     # Initialize listener and connect it to TTS for interrupt detection
     listener = Listener()

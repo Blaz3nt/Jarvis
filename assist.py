@@ -75,11 +75,33 @@ def ask(user_message):
         for tool_use in tool_uses:
             print(f"  [Tool: {tool_use.name}({tool_use.input})]")
             result = execute_tool(tool_use.name, tool_use.input)
-            tool_results.append({
-                "type": "tool_result",
-                "tool_use_id": tool_use.id,
-                "content": str(result),
-            })
+
+            # Vision tools return image data — send as image content block
+            if isinstance(result, dict) and result.get("__vision__"):
+                tool_results.append({
+                    "type": "tool_result",
+                    "tool_use_id": tool_use.id,
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": result["media_type"],
+                                "data": result["image_base64"],
+                            },
+                        },
+                        {
+                            "type": "text",
+                            "text": result.get("description", "Image captured"),
+                        },
+                    ],
+                })
+            else:
+                tool_results.append({
+                    "type": "tool_result",
+                    "tool_use_id": tool_use.id,
+                    "content": str(result),
+                })
 
         conversation_history.append({
             "role": "user",

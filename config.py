@@ -5,8 +5,15 @@ import os
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
 
-# Token budget — max conversation history messages to keep (saves tokens)
+# Token budget
 MAX_HISTORY_MESSAGES = int(os.environ.get("MAX_HISTORY_MESSAGES", "20"))
+# Max characters of memory context to inject per call (~4 chars ≈ 1 token)
+# 2000 chars ≈ 500 tokens ≈ $0.0004 per call on Haiku
+MEMORY_BUDGET_CHARS = int(os.environ.get("MEMORY_BUDGET_CHARS", "2000"))
+# Max facts to keep (oldest get archived when exceeded)
+MAX_FACTS = int(os.environ.get("MAX_FACTS", "100"))
+# Max episode results to inject per call
+MAX_EPISODE_RECALL = int(os.environ.get("MAX_EPISODE_RECALL", "3"))
 
 # Whisper
 WHISPER_MODEL = os.environ.get("WHISPER_MODEL", "tiny.en")

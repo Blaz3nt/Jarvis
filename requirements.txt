@@ -9,6 +9,7 @@ requests>=2.31.0
 openwakeword>=0.6.0
 numpy>=1.24.0
 onnxruntime>=1.16.0
+chromadb>=0.4.0
 --extra-index-url https://download.pytorch.org/whl/cu116
 torch
 git+https://github.com/openai/whisper.git

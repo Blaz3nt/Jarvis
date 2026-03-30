@@ -1,14 +1,14 @@
-import time
 from datetime import datetime
 import anthropic
 import config
 from tools import TOOL_DEFINITIONS, execute_tool
+from memory import build_memory_context, save_conversation
 
 
 # Initialize the Anthropic client
 client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
 
-# Conversation history for memory
+# Conversation history (short-term memory — current session only)
 conversation_history = []
 
 
@@ -16,21 +16,31 @@ def _trim_history():
     """Keep conversation history within budget to minimize token usage."""
     max_msgs = config.MAX_HISTORY_MESSAGES
     if len(conversation_history) > max_msgs:
-        # Always trim in pairs (user/assistant) to keep valid alternation
         trim_count = len(conversation_history) - max_msgs
         trim_count = trim_count + (trim_count % 2)  # round up to even
         del conversation_history[:trim_count]
 
 
 def ask(user_message):
-    """Send a message to Claude with tool_use support and conversation memory.
+    """Send a message to Claude with tool_use, memory injection, and conversation history.
+
+    Before each call, relevant memories are pulled from:
+    - Long-term facts (SQLite) — always included
+    - Episodic memory (ChromaDB) — semantically matched to current topic
 
     Returns the final text response after any tool calls are resolved.
-    Uses Haiku by default for low cost (~$0.25/1M input, $1.25/1M output).
     """
     _trim_history()
 
-    # Add context about current time (compact format)
+    # Build memory context from long-term storage
+    memory_context = build_memory_context(user_message)
+
+    # Construct system prompt with memories injected
+    system = config.SYSTEM_PROMPT
+    if memory_context:
+        system += f"\n\n{memory_context}"
+
+    # Add timestamp
     now = datetime.now().strftime("%H:%M %m/%d")
     enriched_message = f"[{now}] {user_message}"
 
@@ -44,27 +54,23 @@ def ask(user_message):
         response = client.messages.create(
             model=config.CLAUDE_MODEL,
             max_tokens=1024,
-            system=config.SYSTEM_PROMPT,
+            system=system,
             tools=TOOL_DEFINITIONS,
             messages=conversation_history,
         )
 
-        # Collect the full response content
         assistant_content = response.content
         conversation_history.append({
             "role": "assistant",
             "content": assistant_content,
         })
 
-        # Check if Claude wants to use tools
         tool_uses = [block for block in assistant_content if block.type == "tool_use"]
 
         if not tool_uses:
-            # No tool calls — extract the text response
             text_parts = [block.text for block in assistant_content if block.type == "text"]
             return " ".join(text_parts)
 
-        # Execute each tool and send results back
         tool_results = []
         for tool_use in tool_uses:
             print(f"  [Tool: {tool_use.name}({tool_use.input})]")
@@ -79,9 +85,19 @@ def ask(user_message):
             "role": "user",
             "content": tool_results,
         })
-        # Loop back to let Claude process the tool results
 
 
-def clear_history():
-    """Clear conversation history."""
+def end_conversation():
+    """Call when a conversation ends (timeout/sleep).
+
+    Saves an episode summary and extracts facts to long-term memory.
+    Then clears short-term history for the next conversation.
+    """
+    if len(conversation_history) >= 2:
+        save_conversation(conversation_history)
     conversation_history.clear()
+
+
+def get_history():
+    """Return current conversation history (for memory saving)."""
+    return conversation_history

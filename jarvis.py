@@ -31,6 +31,7 @@ import assist
 import config
 import tts
 from listener import Listener
+from memory import get_stats
 from tools.reminders import init_scheduler
 
 
@@ -42,6 +43,9 @@ def main():
     listener = Listener()
     tts.set_listener(listener)
     listener.start()
+
+    stats = get_stats()
+    print(f"Memory: {stats['facts']} facts, {stats['episodes']} episodes loaded.")
 
     while True:
         result = listener.listen()
@@ -55,8 +59,9 @@ def main():
             tts.speak("Yes sir?")
             continue
 
-        # --- Conversation timed out → enter grace period (not full sleep) ---
+        # --- Conversation timed out → save memory, enter grace period ---
         if result == "__TIMEOUT__":
+            assist.end_conversation()
             listener.start_lingering()
             continue
 
